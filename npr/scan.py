@@ -53,21 +53,25 @@ def scrape_by_program(program, web_session=requests_html.HTMLSession(), params=p
             listeners around the country and the world with two hours of multi-faceted
             stories and commentaries that inform, challenge and occasionally amuse.
             Morning Edition is the most listened-to news radio program in the country."""
+        podcast.image = 'https://media.npr.org/assets/img/2018/08/06/npr_me_podcasttile_sq-4036eb96471eeed96c37dfba404bb48ea798e78c-s200-c85.jpg'
 
     elif program == 'all-things-considered':
         podcast.name = "NPR All Things Considered"
         podcast.description = \
             """NPR's afternoon news show"""
+        podcast.image = 'https://media.npr.org/assets/img/2018/08/06/npr_atc_podcasttile_sq-bcc33a301405d37aa6bdcc090f43d29264915f4a-s200-c85.jpg'
 
     elif program == 'weekend-edition-saturday':
         podcast.name = "NPR Weekend Edition Saturday"
         podcast.description = \
             """NPR morning news on Saturday"""
+        podcast.image = 'https://media.npr.org/assets/img/2019/02/26/we_otherentitiestemplatesat_sq-cbde87a2fa31b01047441e6f34d2769b0287bcd4-s200-c85.png'
 
     elif program == 'weekend-edition-sunday':
         podcast.name = "NPR Weekend Edition Sunday"
         podcast.description = \
             """NPR morning news show on Sunday"""
+        podcast.image = 'https://media.npr.org/assets/img/2019/02/26/we_otherentitiestemplatesun_sq-4a03b35e7e5adfa446aec374523a578d54dc9bf5-s200-c85.png'
 
     else:
         raise WebFormatException(f"program { program } not found")
