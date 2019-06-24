@@ -16,6 +16,7 @@ requests-html = "*"
 podgen = "*"
 waitress = "*"
 cachelib = "*"
+flask-cache = "*"
 
 [requires]
 python_version = "3.7"
