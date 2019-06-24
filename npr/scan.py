@@ -146,18 +146,23 @@ def scrape_episode(web_session, params, program, episode, date, podcast):
         raise WebFormatException(f"no episodes found on page { url }")
 
     stories = episode.find("article.rundown-segment")
+    story_num = 0
     for story in stories:
+        story_num = story_num + 1
         audio_module = story.find("div.audio-module", first=True)
         if audio_module == None:
-            raise WebFormatException(f"no div.audio-module found on page { url }")
+            # sometimes there are just text articles; ignore the ones without audio
+            log.debug(f"No div.audio-module for article num { story_num }")
+            continue
         audio_module_tools = audio_module.find("div.audio-module-tools", first=True)
         if audio_module_tools == None:
-            raise WebFormatException(f"no div.audio-module-tools found on page { url }")
+            log.debug(f"No div.audio-module-tools for article num { story_num }")
+            continue
         
         download_element = audio_module_tools.find('li.audio-tool-download a', first=True)
         if download_element == None:
             # sometimes articles don't have download enabled.  Ignore them
-            log.debug("No download link for article")
+            log.debug(f"No download link for article num { story_num }")
             continue
         href = download_element.attrs['href'] 
         e_title = story.find('h3.rundown-segment__title a', first=True)
@@ -165,7 +170,7 @@ def scrape_episode(web_session, params, program, episode, date, podcast):
         link = e_title.attrs['href']
         duration = audio_module.find('time', first=True).text
 
-        #log.debug(f"title { title } href { href } duration { duration }")
+        #log.debug(f"story { story_num } title { title } href { href } duration { duration }")
 
         pe = podcast.add_episode()
         pe.title = title
@@ -176,7 +181,7 @@ def scrape_episode(web_session, params, program, episode, date, podcast):
             pe.publication_date = pubdate
 
         filesize = parse_size(href)
-        #log.debug(f"media filesize { filesize } href { href }")
+        #log.debug(f"media filesize story { story_num } { filesize } href { href }")
         pe.media = Media(href, size=parse_size(href), type='audio/mpeg', duration=parse_duration(duration))
 
 def parse_date(str):
