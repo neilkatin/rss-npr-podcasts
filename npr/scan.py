@@ -62,7 +62,7 @@ def scrape_morning_edition(web_session=requests_html.HTMLSession(), params=param
 
 
 def scrape(web_session, params, program, podcast):
-    log.debug("scrape: called")
+    log.debug(f"scrape: processing { program }")
 
     url = params[PARAMS_MAINTEMPLATE].format(program=program)
 
@@ -80,14 +80,14 @@ def scrape(web_session, params, program, podcast):
 
         episode_id = article.attrs['data-episode-id']
         episode_date = article.attrs['data-episode-date']
-        log.debug("episode id %s, episode date %s", episode_id, episode_date)
+        #log.debug("episode id %s, episode date %s", episode_id, episode_date)
         podgen_episode = scrape_episode(web_session, params, program, episode_id, episode_date, podcast)
     
     
 def scrape_episode(web_session, params, program, episode, date, podcast):
     url = params[PARAMS_SUBTEMPLATE].format(program=program, episode=episode)
 
-    log.debug(f"url is { url }")
+    #log.debug(f"url is { url }")
     
     response = web_session.get(url, timeout=params[PARAMS_WEBTIMEOUT])
     response.raise_for_status()
@@ -111,18 +111,22 @@ def scrape_episode(web_session, params, program, episode, date, podcast):
         link = e_title.attrs['href']
         duration = audio_module.find('time', first=True).text
 
-        log.debug(f"title { title } href { href } duration { duration }")
+        #log.debug(f"title { title } href { href } duration { duration }")
 
         pe = podcast.add_episode()
         pe.title = title
         pe.link = link
-        pe.media = Media(href, size=parse_size(link), type='audio/mpeg', duration=parse_duration(duration))
+        filesize = parse_size(href)
+        #log.debug(f"media filesize { filesize } href { href }")
+        pe.media = Media(href, size=parse_size(href), type='audio/mpeg', duration=parse_duration(duration))
 
 
 def parse_size(str):
     """ pull the size out of an NPR link; look for ...&size=\d+& """
-    m = re.search(r'\&size=(\d+)\&', str)
-    if m == None: return 0
+    m = re.search('&size=(\d+)&', str)
+    if m == None:
+        #log.debug("no match found")
+        return 0
     return m.group(1)
 
 def parse_duration(str):

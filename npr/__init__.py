@@ -85,6 +85,9 @@ def init_logging(app_name):
             'lml': {
                 'level': 'INFO',
             },
+            'watchdog': {
+                'level': 'INFO',
+            },
         },
     }
 
