@@ -17,6 +17,7 @@ podgen = "*"
 waitress = "*"
 cachelib = "*"
 flask-caching = "*"
+pytz = "*"
 
 [requires]
 python_version = "3.7"

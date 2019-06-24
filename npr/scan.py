@@ -18,6 +18,7 @@ from podgen import Podcast, Episode, Media
 
 import requests
 import requests_html
+import pytz
 
 import logging
 log = logging.getLogger(__name__)
@@ -33,9 +34,12 @@ params = {
     PARAMS_SUBTEMPLATE:  'https://www.npr.org/programs/{program}/00/00/00/{episode}',
 }
 
+# NPR runs on eastern time
+pod_tz = pytz.timezone('America/New_York')
+
 def do_scrape():
     web_session = requests_html.HTMLSession()
-    morning_edition = scrape_morning_edition(web_session, params)
+    morning_edition = scrape_by_program('morning-edition')
 
 class WebFormatException(Exception):
     def __init__(self, message):
@@ -132,7 +136,7 @@ def scrape(web_session, params, program, podcast):
 def scrape_episode(web_session, params, program, episode, date, podcast):
     url = params[PARAMS_SUBTEMPLATE].format(program=program, episode=episode)
 
-    #log.debug(f"url is { url }")
+    log.debug(f"url is { url }")
     
     response = web_session.get(url, timeout=params[PARAMS_WEBTIMEOUT])
     response.raise_for_status()
@@ -150,7 +154,12 @@ def scrape_episode(web_session, params, program, episode, date, podcast):
         if audio_module_tools == None:
             raise WebFormatException(f"no div.audio-module-tools found on page { url }")
         
-        href = audio_module_tools.find('li.audio-tool-download a', first=True).attrs['href'] 
+        download_element = audio_module_tools.find('li.audio-tool-download a', first=True)
+        if download_element == None:
+            # sometimes articles don't have download enabled.  Ignore them
+            log.debug("No download link for article")
+            continue
+        href = download_element.attrs['href'] 
         e_title = story.find('h3.rundown-segment__title a', first=True)
         title = e_title.text
         link = e_title.attrs['href']
@@ -161,16 +170,39 @@ def scrape_episode(web_session, params, program, episode, date, podcast):
         pe = podcast.add_episode()
         pe.title = title
         pe.link = link
+
+        pubdate = parse_date(href)
+        if pubdate != None:
+            pe.publication_date = pubdate
+
         filesize = parse_size(href)
         #log.debug(f"media filesize { filesize } href { href }")
         pe.media = Media(href, size=parse_size(href), type='audio/mpeg', duration=parse_duration(duration))
 
+def parse_date(str):
+    """ pull the date out of an NPR download link.
+    Ideally this would be date + time, but time doesn't seem
+    to be present anywhere in the interface
+
+    Final component of the URL seems to be .../YYYYMMDD_slug.mp3?...
+    Search for that and parse the results
+    """
+    m = re.search('/(\d{4})(\d{2})(\d{2})_[^/]+.mp3\?', str)
+    if m == None:
+        log.debug(f"No date found in url { str }")
+        return None
+    year = int(m.group(1))
+    month = int(m.group(2))
+    day = int(m.group(3))
+    dt = datetime.datetime(year, month, day, tzinfo=pod_tz)
+    #log.debug(f"found a date: { m.group(1) }-{ m.group(2) }-{ m.group(3) } / { dt }")
+    return dt
 
 def parse_size(str):
     """ pull the size out of an NPR link; look for ...&size=\d+& """
     m = re.search('&size=(\d+)&', str)
     if m == None:
-        #log.debug("no match found")
+        log.debug("no size found in url { str }")
         return 0
     return m.group(1)
 
