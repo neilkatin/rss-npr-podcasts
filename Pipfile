@@ -15,6 +15,7 @@ requests = "*"
 requests-html = "*"
 podgen = "*"
 waitress = "*"
+cachelib = "*"
 
 [requires]
 python_version = "3.7"

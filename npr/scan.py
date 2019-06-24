@@ -23,12 +23,14 @@ import logging
 log = logging.getLogger(__name__)
 
 PARAMS_WEBTIMEOUT = "TIMEOUT"
+PARAMS_BASEURL = "BASEURL"
 PARAMS_MAINTEMPLATE = "MAINTEMPLATE"
 PARAMS_SUBTEMPLATE = "SUBTEMPLATE"
 params = {
     PARAMS_WEBTIMEOUT: 30,
-    PARAMS_MAINTEMPLATE: 'https://www.npr.org/programs/{program}/archive' ,
-    PARAMS_SUBTEMPLATE:  'https://www.npr.org/programs/{program}/00/00/00/{episode}' ,
+    PARAMS_BASEURL:      'https://www.npr.org/programs/{program}/',
+    PARAMS_MAINTEMPLATE: 'https://www.npr.org/programs/{program}/archive',
+    PARAMS_SUBTEMPLATE:  'https://www.npr.org/programs/{program}/00/00/00/{episode}',
 }
 
 def do_scrape():
@@ -38,6 +40,45 @@ def do_scrape():
 class WebFormatException(Exception):
     def __init__(self, message):
         self.message = message
+
+def scrape_by_program(program, web_session=requests_html.HTMLSession(), params=params):
+    podcast = Podcast()
+    podcast.explicit = False
+    podcast.website = params[PARAMS_BASEURL].format(program=program)
+
+    if program == 'morning-edition':
+        podcast.name = "NPR Morning Edition"
+        podcast.description = \
+            """Every weekday for over three decades, Morning Edition has taken
+            listeners around the country and the world with two hours of multi-faceted
+            stories and commentaries that inform, challenge and occasionally amuse.
+            Morning Edition is the most listened-to news radio program in the country."""
+
+    elif program == 'all-things-considered':
+        podcast.name = "NPR All Things Considered"
+        podcast.description = \
+            """NPR's afternoon news show"""
+
+    elif program == 'weekend-edition-saturday':
+        podcast.name = "NPR Weekend Edition Saturday"
+        podcast.description = \
+            """NPR morning news on Saturday"""
+
+    elif program == 'weekend-edition-sunday':
+        podcast.name = "NPR Weekend Edition Sunday"
+        podcast.description = \
+            """NPR morning news show on Sunday"""
+
+    else:
+        raise WebFormatException(f"program { program } not found")
+
+    scrape(web_session, params, program, podcast)
+
+    rssfeed = podcast.rss_str(minimize=False)
+    #log.debug(f"\n\nfeed { rssfeed }")
+
+    return rssfeed
+
 
 def scrape_morning_edition(web_session=requests_html.HTMLSession(), params=params):
 
