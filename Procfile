@@ -1,1 +1,1 @@
-web: waitress-serve --call 'npr:create_app'
+web: waitress-serve --port=$PORT --call 'npr:create_app'
