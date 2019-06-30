@@ -22,7 +22,7 @@ My instance is publically hosted at [heroku](https://rss-npr-podcasts.herokuapp.
 
 The original version of this app is
 [missing-npr-podcasts](https://github.com/jetheis/MissingNPRPodcasts)
-(also [Missing NPR Podcasts](http://www.missingnprpodcasts.com/) which I used for many years.
+(also [Missing NPR Podcasts](http://www.missingnprpodcasts.com/)) which I used for many years.
 Alas, NPR retired its old API and that program stopped working, so I made this alternate version.
 
 ## Build Notes
@@ -48,3 +48,18 @@ flask run
 ```
 
 Go to ```http://localhost:8001``` to see the four feed URLs
+
+## Caching
+
+The app caches results in the production environment for 10 minutes to reduce load on the NPR servers.
+
+The current cache is in-app only (since my heroku
+implementation is single process).  However, I used
+[Flask-Caching](https://pythonhosted.org/Flask-Caching/) to implement
+the caching, so its trival to change to an external cache process like
+memcache or redis for a multi-server cache strategy.
+
+## Testing
+
+You can test just the scrape process by using ```flask scan``` instead of ```flask run```.
+
