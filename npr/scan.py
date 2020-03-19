@@ -111,10 +111,10 @@ def scrape_morning_edition(web_session=requests_html.HTMLSession(), params=param
 
 
 def scrape(web_session, params, program, podcast):
-    log.debug(f"scrape: processing { program }")
 
     url = params[PARAMS_MAINTEMPLATE].format(program=program)
 
+    log.debug(f"scrape: processing { program } index page { url }")
     response = web_session.get(url, timeout=params[PARAMS_WEBTIMEOUT])
     response.raise_for_status()
 
@@ -129,7 +129,7 @@ def scrape(web_session, params, program, podcast):
 
         episode_id = article.attrs['data-episode-id']
         episode_date = article.attrs['data-episode-date']
-        #log.debug("episode id %s, episode date %s", episode_id, episode_date)
+        log.debug("episode id %s, episode date %s", episode_id, episode_date)
         podgen_episode = scrape_episode(web_session, params, program, episode_id, episode_date, podcast)
     
     
@@ -143,7 +143,9 @@ def scrape_episode(web_session, params, program, episode, date, podcast):
 
     episode = response.html.find('#story-list', first=True)
     if episode == None:
-        raise WebFormatException(f"no episodes found on page { url }")
+        #raise WebFormatException(f"no episodes found on page { url }")
+        log.warn(f"no episodes found on page { url }")
+        return
 
     stories = episode.find("article.rundown-segment")
     story_num = 0
