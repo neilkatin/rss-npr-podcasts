@@ -40,6 +40,7 @@ pod_tz = pytz.timezone('America/New_York')
 def do_scrape():
     web_session = requests_html.HTMLSession()
     morning_edition = scrape_by_program('morning-edition')
+    all_things_considered = scrape_by_program('all-things-considered')
 
 class WebFormatException(Exception):
     def __init__(self, message):
@@ -170,7 +171,11 @@ def scrape_episode(web_session, params, program, episode, date, podcast):
         e_title = story.find('h3.rundown-segment__title a', first=True)
         title = e_title.text
         link = e_title.attrs['href']
-        duration = audio_module.find('time', first=True).text
+        
+        element_time = audio_module.find('time', first=True)
+        duration = None
+        if element_time != None:
+            duration = parse_duration(element_time.text)
 
         #log.debug(f"story { story_num } title { title } href { href } duration { duration }")
 
@@ -183,8 +188,8 @@ def scrape_episode(web_session, params, program, episode, date, podcast):
             pe.publication_date = pubdate
 
         filesize = parse_size(href)
-        #log.debug(f"media filesize story { story_num } { filesize } href { href }")
-        pe.media = Media(href, size=parse_size(href), type='audio/mpeg', duration=parse_duration(duration))
+        log.debug(f"media filesize story { story_num } { filesize } href { href }")
+        pe.media = Media(href, size=parse_size(href), type='audio/mpeg', duration=duration)
 
 def parse_date(str):
     """ pull the date out of an NPR download link.
