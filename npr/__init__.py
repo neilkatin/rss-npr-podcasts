@@ -5,12 +5,29 @@ import logging.config
 
 from flask import Flask
 from flask_caching import Cache
+#from flask_reverse_proxy_fix.middleware import ReverseProxyPrefixFix
+from werkzeug.middleware.proxy_fix import ProxyFix
+
+import dotenv
 
 
 def create_app(test_config=None):
+    global log
+
+    dotenv.load_dotenv('.env')
+
     # create and configure the app
-    init_logging(__name__)
     app = Flask(__name__, instance_relative_config=True)
+    init_logging(__name__, app)
+    app.wsgi_app = ProxyFix(
+        app.wsgi_app, x_for=1, x_proto=1, x_prefix=1
+        )
+
+    app.config.from_prefixed_env()
+
+    log.info(f"os.getenv[FLASK_DEBUG] { os.getenv('FLASK_DEBUG') }")
+    app.config['DEBUG'] = os.getenv('FLASK_DEBUG')
+    log.info(f"debug { app.config['DEBUG'] } app.debug { app.debug }")
     #app.config.from_mapping(
         # taken from .flaskenv and .env
         #SECRET_KEY='dev',
@@ -32,15 +49,19 @@ def create_app(test_config=None):
     except OSError:
         pass
 
-    global log
+
+    #log.debug(f"app.config: { app.config }")
     log.debug(f"app.config['ENV'] = { app.config['ENV'] }, __name__ = { __name__ }")
+
+    #ReverseProxyPrefixFix(app)
+
     global cache
-    if app.config['ENV'] == 'production':
-        cache = Cache(config={'CACHE_TYPE': 'simple'})
-    else:
+    if app.config['DEBUG']:
         #cache = Cache(config={'CACHE_TYPE': 'null', 'CACHE_NO_NULL_WARNING': True })
         #cache = Cache(config={'CACHE_TYPE': 'simple', 'CACHE_DEFAULT_TIMEOUT': 5 })
         cache = Cache(config=app.config)
+    else:
+        cache = Cache(config={'CACHE_TYPE': 'simple'})
 
     cache.init_app(app)
 
@@ -57,10 +78,10 @@ def create_app(test_config=None):
             <p>Supported URLs are:</p>
 
             <ul>
-                <li><a href='/rss/morning-edition'>/rss/morning-edition</a></li>
-                <li><a href='/rss/all-things-considered'>/rss/all-things-considered</a></li>
-                <li><a href='/rss/weekend-edition-saturday'>/rss/weekend-edition-saturday</a></li>
-                <li><a href='/rss/weekend-edition-sunday'>/rss/weekend-edition-sunday</a></li>
+                <li><a href='/npr/morning-edition'>/npr/morning-edition</a></li>
+                <li><a href='/npr/all-things-considered'>/npr/all-things-considered</a></li>
+                <li><a href='/npr/weekend-edition-saturday'>/npr/weekend-edition-saturday</a></li>
+                <li><a href='/npr/weekend-edition-sunday'>/npr/weekend-edition-sunday</a></li>
             </ul>
             """
 
@@ -73,7 +94,7 @@ def create_app(test_config=None):
     return app
 
 
-def init_logging(app_name):
+def init_logging(app_name, app):
     logging_config = {
         'version': 1,
         'handlers': {
@@ -97,7 +118,7 @@ def init_logging(app_name):
             },
         },
         'root': {
-            'level': 'DEBUG',
+            'level': 'DEBUG' if app.config['DEBUG'] else 'INFO',
             #'handlers': [ 'console', 'wsgi' ],
             'handlers': [ 'wsgi' ],
         },

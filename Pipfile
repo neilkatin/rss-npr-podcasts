@@ -18,6 +18,7 @@ waitress = "*"
 cachelib = "*"
 flask-caching = "*"
 pytz = "*"
+flask-reverse-proxy-fix = "*"
 
 [requires]
 python_version = "3.11"

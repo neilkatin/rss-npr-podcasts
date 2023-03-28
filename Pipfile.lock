@@ -1,11 +1,11 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "9d003e6031133e6747376a7a487074c3b104c81aee65feac8c433a33c112da5b"
+            "sha256": "f45407198d0d0d07e2cf77af1659ab44af86042d7ce886ea7cc34de8c59654af"
         },
         "pipfile-spec": 6,
         "requires": {
-            "python_version": "3.8"
+            "python_version": "3.11"
         },
         "sources": [
             {
@@ -114,6 +114,14 @@
             ],
             "index": "pypi",
             "version": "==2.0.1"
+        },
+        "flask-reverse-proxy-fix": {
+            "hashes": [
+                "sha256:03ce3312d92f2b0073205e74bee1e6213640b44b1de730375d8cf478447e208c",
+                "sha256:fc0e9caa3ccb9b1b43362aaa84744c7c996f1cc1af7f3aa50732069a9f2e00a4"
+            ],
+            "index": "pypi",
+            "version": "==0.2.1"
         },
         "future": {
             "hashes": [
