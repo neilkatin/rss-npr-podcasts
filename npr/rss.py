@@ -7,8 +7,8 @@ from flask import (
     Blueprint, flash, g, redirect, render_template, request, session, url_for, make_response
 )
 
-#bp = Blueprint('rss', __name__, url_prefix='/npr')
-bp = Blueprint('rss', __name__)
+bp = Blueprint('rss', __name__, url_prefix='/npr')
+#bp = Blueprint('rss', __name__)
 
 from flask import current_app, g
 
