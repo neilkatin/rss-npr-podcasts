@@ -20,6 +20,7 @@ flask-caching = "*"
 pytz = "*"
 flask-reverse-proxy-fix = "*"
 lxml-html-clean = "*"
+urllib3 = ">=2.5"
 
 [requires]
 python_version = "3.12"
